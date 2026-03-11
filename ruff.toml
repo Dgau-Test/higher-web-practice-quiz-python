@@ -1,7 +1,9 @@
-line-length = 120
+line-length = 79
 
 exclude = [
     "*venv",
+    "*env",
+    "*/migrations/*",
 ]
 
 [lint]
@@ -36,3 +38,11 @@ avoid-escape = false
 
 [lint.pydocstyle]
 convention = "pep257"
+
+
+[lint.mccabe]
+max-complexity = 10
+
+
+[lint.per-file-ignores]
+'project/settings.py' = ['E501']

@@ -1,0 +1,20 @@
+"""Централизованные константы приложения quiz."""
+
+CATEGORY_TITLE_MAX_LENGTH = 100
+QUIZ_TITLE_MAX_LENGTH = 200
+QUIZ_DESCRIPTION_MAX_LENGTH = 500
+QUESTION_TEXT_MAX_LENGTH = 500
+QUESTION_DESCRIPTION_MAX_LENGTH = 500
+QUESTION_OPTION_MAX_LENGTH = 120
+QUESTION_CORRECT_ANSWER_MAX_LENGTH = 120
+QUESTION_EXPLANATION_MAX_LENGTH = 250
+DIFFICULTY_MAX_LENGTH = 6
+
+MIN_OPTIONS_COUNT = 2
+
+OPTIONS_MIN_COUNT_ERROR = 'options должно содержать минимум два варианта.'
+CORRECT_ANSWER_NOT_IN_OPTIONS_ERROR = 'Правильный ответ должен быть в options.'
+CHECK_ANSWER_REQUIRED_ERROR = (
+    'Поле answer обязательно и должно быть непустой строкой.'
+)
+NO_QUESTIONS_IN_QUIZ_ERROR = 'No questions in quiz'
