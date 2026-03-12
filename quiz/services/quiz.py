@@ -59,5 +59,4 @@ class QuizService(AbstractQuizService):
 
     def delete_quiz(self, quiz_id: int) -> None:
         """Удаляет квиз."""
-        quiz = self.get_quiz(quiz_id)
-        quiz.delete()
+        self.get_quiz(quiz_id).delete()

@@ -1,5 +1,3 @@
-"""Тесты сериализаторов."""
-
 import pytest
 
 from quiz.models import Category, Difficulty, Quiz

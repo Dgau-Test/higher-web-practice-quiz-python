@@ -23,7 +23,6 @@ class QuestionFilter(django_filters.FilterSet):
     text = django_filters.CharFilter(
         field_name='text', lookup_expr='icontains'
     )
-    quiz = django_filters.NumberFilter(field_name='quiz_id')
 
     class Meta:
         model = Question

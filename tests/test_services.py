@@ -1,5 +1,3 @@
-"""Тесты сервисного слоя."""
-
 import pytest
 from django.http import Http404
 

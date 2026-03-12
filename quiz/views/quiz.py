@@ -1,13 +1,11 @@
-"""Модуль с контроллерами для квизов."""
-
 from http import HTTPStatus
 
-from django.shortcuts import get_object_or_404
+from django.http import Http404
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from quiz.models import Question, Quiz
+from quiz.models import Question
 from quiz.serializers import QuestionSerializer, QuizSerializer
 from quiz.services.question import QuestionService
 from quiz.services.quiz import QuizService
@@ -72,7 +70,8 @@ class QuizRandomQuestionView(APIView):
 
     def get(self, request: Request, id: int) -> Response:
         """Возвращает случайный вопрос для квиза."""
-        get_object_or_404(Quiz, id=id)
-        get_object_or_404(Question.objects.filter(quiz_id=id)[:1])
-        question = self.question_service.random_question_from_quiz(id)
+        try:
+            question = self.question_service.random_question_from_quiz(id)
+        except Question.DoesNotExist as exc:
+            raise Http404 from exc
         return Response(QuestionSerializer(question).data)

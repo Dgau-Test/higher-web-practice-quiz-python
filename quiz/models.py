@@ -4,15 +4,15 @@ from django.db import models
 
 from quiz.constants import (
     CATEGORY_TITLE_MAX_LENGTH,
-    DIFFICULTY_MAX_LENGTH,
+    DIFFICULTY_CODE_MAX_LENGTH, DIFFICULTY_MAX_LENGTH,
     QUESTION_CORRECT_ANSWER_MAX_LENGTH,
     QUESTION_DESCRIPTION_MAX_LENGTH,
     QUESTION_EXPLANATION_MAX_LENGTH,
     QUESTION_OPTION_MAX_LENGTH,
     QUESTION_TEXT_MAX_LENGTH,
-    QUIZ_DESCRIPTION_MAX_LENGTH,
-    QUIZ_TITLE_MAX_LENGTH,
+    QUIZ_DESCRIPTION_MAX_LENGTH, QUIZ_TITLE_MAX_LENGTH
 )
+from quiz.managers import QuestionManager
 
 
 class Category(models.Model):
@@ -27,7 +27,13 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-        ordering = ('id',)
+        ordering = ('title',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title'],
+                name='unique_category_title'
+            )
+        ]
 
     def __str__(self) -> str:
         return self.title
@@ -66,11 +72,14 @@ class Difficulty(models.Model):
     HARD = 'hard'
 
     code = models.CharField(
-        max_length=DIFFICULTY_MAX_LENGTH,
+        max_length=DIFFICULTY_CODE_MAX_LENGTH,
         primary_key=True,
         verbose_name='Код сложности',
     )
-    title = models.CharField(max_length=32, verbose_name='Название сложности')
+    title = models.CharField(
+        max_length=DIFFICULTY_MAX_LENGTH,
+        verbose_name='Название сложности'
+    )
 
     class Meta:
         verbose_name = 'Сложность'
@@ -79,23 +88,6 @@ class Difficulty(models.Model):
 
     def __str__(self) -> str:
         return self.title
-
-
-class QuestionManager(models.Manager):
-    """Менеджер вопроса с поддержкой удобного `options` при create."""
-
-    def create(self, **kwargs) -> 'Question':
-        """Создает вопрос и связанные варианты ответов."""
-        options = kwargs.pop('options', None)
-        difficulty = kwargs.get('difficulty')
-        if isinstance(difficulty, str):
-            kwargs.pop('difficulty')
-            kwargs['difficulty_id'] = difficulty
-
-        question = super().create(**kwargs)
-        if options is not None:
-            question.replace_options(options)
-        return question
 
 
 class Question(models.Model):

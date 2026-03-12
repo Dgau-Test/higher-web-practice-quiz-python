@@ -1,5 +1,3 @@
-"""Модуль c интерфейсами сервисов для работы c БД"""
-
 from abc import ABC, abstractmethod
 
 from quiz.models import Quiz, Question, Category

@@ -1,5 +1,3 @@
-"""Тесты API слоя."""
-
 from http import HTTPStatus
 
 import pytest

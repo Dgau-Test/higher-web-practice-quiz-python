@@ -19,51 +19,36 @@ from quiz.models import Category, Difficulty, Question, QuestionOption, Quiz
 class TestModelOrdering:
     """Тесты ordering из Meta."""
 
-    def test_category_default_ordering_by_id(self) -> None:
-        """Проверяет ordering категорий по id."""
-        category_1 = Category.objects.create(title='Category B')
-        category_2 = Category.objects.create(title='Category A')
+    def test_category_default_ordering_by_title(
+        self, categories_batch: list
+    ) -> None:
+        """Проверяет ordering категорий по title."""
+        actual_titles = list(Category.objects.values_list('title', flat=True))
+        expected_titles = list(
+            Category.objects.order_by('title').values_list('title', flat=True)
+        )
+        assert actual_titles == expected_titles
+        assert len(categories_batch) == 10
 
-        categories = list(Category.objects.all())
-        assert [item.id for item in categories] == [
-            category_1.id,
-            category_2.id,
-        ]
-
-    def test_quiz_default_ordering_by_id(self) -> None:
+    def test_quiz_default_ordering_by_id(self, quizzes_batch: list) -> None:
         """Проверяет ordering квизов по id."""
-        quiz_1 = Quiz.objects.create(title='Quiz B')
-        quiz_2 = Quiz.objects.create(title='Quiz A')
+        actual_ids = list(Quiz.objects.values_list('id', flat=True))
+        expected_ids = list(
+            Quiz.objects.order_by('id').values_list('id', flat=True)
+        )
+        assert actual_ids == expected_ids
+        assert len(quizzes_batch) == 10
 
-        quizzes = list(Quiz.objects.all())
-        assert [item.id for item in quizzes] == [quiz_1.id, quiz_2.id]
-
-    def test_question_default_ordering_by_id(self) -> None:
+    def test_question_default_ordering_by_id(
+        self, questions_batch: list
+    ) -> None:
         """Проверяет ordering вопросов по id."""
-        category = Category.objects.create(title='Ordering category')
-        quiz = Quiz.objects.create(title='Ordering quiz')
-        question_1 = Question.objects.create(
-            quiz=quiz,
-            category=category,
-            text='Question B',
-            options=['1', '2'],
-            correct_answer='1',
-            difficulty=Difficulty.EASY,
+        actual_ids = list(Question.objects.values_list('id', flat=True))
+        expected_ids = list(
+            Question.objects.order_by('id').values_list('id', flat=True)
         )
-        question_2 = Question.objects.create(
-            quiz=quiz,
-            category=category,
-            text='Question A',
-            options=['1', '2'],
-            correct_answer='2',
-            difficulty=Difficulty.MEDIUM,
-        )
-
-        questions = list(Question.objects.all())
-        assert [item.id for item in questions] == [
-            question_1.id,
-            question_2.id,
-        ]
+        assert actual_ids == expected_ids
+        assert len(questions_batch) == 10
 
 
 @pytest.mark.django_db

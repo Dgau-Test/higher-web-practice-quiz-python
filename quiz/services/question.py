@@ -1,7 +1,8 @@
 """Модуль с реализацией сервиса вопросов."""
 
+import random
+
 from django.db.models import QuerySet
-from django.db.models.functions import Random
 from django.shortcuts import get_object_or_404
 
 from quiz.dao import AbstractQuestionService
@@ -98,8 +99,7 @@ class QuestionService(AbstractQuestionService):
 
     def delete_question(self, question_id: int) -> None:
         """Удаляет вопрос."""
-        question = self.get_question(question_id)
-        question.delete()
+        self.get_question(question_id).delete()
 
     def check_answer(self, question_id: int, answer: str) -> bool:
         """Проверяет ответ пользователя."""
@@ -112,10 +112,11 @@ class QuestionService(AbstractQuestionService):
     def random_question_from_quiz(self, quiz_id: int) -> Question:
         """Возвращает случайный вопрос квиза."""
         get_object_or_404(Quiz, id=quiz_id)
-        random_question_id = (
-            Question.objects.filter(quiz_id=quiz_id)
-            .order_by(Random())
-            .values_list('id', flat=True)[:1]
-            .get()
+
+        questions = list(
+            self._base_queryset().filter(quiz_id=quiz_id)
         )
-        return self._base_queryset().get(id=random_question_id)
+        if not questions:
+            raise Question.DoesNotExist
+
+        return random.choice(questions)

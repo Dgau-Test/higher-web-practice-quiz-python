@@ -1,6 +1,5 @@
-"""Тесты роутинга API (versioned routes)."""
-
 from http import HTTPStatus
+from typing import Any
 
 import pytest
 from django.test import Client
@@ -25,75 +24,65 @@ from quiz.views.quiz import (
 class TestApiRoutes:
     """Проверяет корректную сборку и резолв API маршрутов."""
 
-    def test_reverse_builds_v1_paths(self) -> None:
+    @pytest.mark.parametrize(
+        ('route_name', 'kwargs', 'expected_path'),
+        [
+            ('category-list-create', None, '/api/v1/category'),
+            ('category-detail', {'id': 1}, '/api/v1/category/1'),
+            ('quiz-list-create', None, '/api/v1/quiz'),
+            ('quiz-detail', {'id': 1}, '/api/v1/quiz/1'),
+            (
+                'quiz-random-question',
+                {'id': 1},
+                '/api/v1/quiz/1/random_question',
+            ),
+            (
+                'quiz-by-title',
+                {'title': 'Python'},
+                '/api/v1/quiz/by_title/Python',
+            ),
+            ('question-list-create', None, '/api/v1/question'),
+            ('question-detail', {'id': 1}, '/api/v1/question/1'),
+            (
+                'question-by-text',
+                {'text': 'orm'},
+                '/api/v1/question/by_text/orm',
+            ),
+            ('question-check', {'id': 1}, '/api/v1/question/1/check'),
+        ],
+    )
+    def test_reverse_builds_v1_paths(
+        self,
+        route_name: str,
+        kwargs: dict | None,
+        expected_path: str,
+    ) -> None:
         """Проверяет, что reverse строит URL с префиксом /api/v1/."""
-        assert reverse('category-list-create') == '/api/v1/category'
-        assert (
-            reverse('category-detail', kwargs={'id': 1})
-            == '/api/v1/category/1'
-        )
-        assert reverse('quiz-list-create') == '/api/v1/quiz'
-        assert reverse('quiz-detail', kwargs={'id': 1}) == '/api/v1/quiz/1'
-        assert (
-            reverse('quiz-random-question', kwargs={'id': 1})
-            == '/api/v1/quiz/1/random_question'
-        )
-        assert (
-            reverse('quiz-by-title', kwargs={'title': 'Python'})
-            == '/api/v1/quiz/by_title/Python'
-        )
-        assert reverse('question-list-create') == '/api/v1/question'
-        assert (
-            reverse('question-detail', kwargs={'id': 1})
-            == '/api/v1/question/1'
-        )
-        assert (
-            reverse('question-by-text', kwargs={'text': 'orm'})
-            == '/api/v1/question/by_text/orm'
-        )
-        assert (
-            reverse('question-check', kwargs={'id': 1})
-            == '/api/v1/question/1/check'
-        )
+        if kwargs is None:
+            assert reverse(route_name) == expected_path
+            return
+        assert reverse(route_name, kwargs=kwargs) == expected_path
 
-    def test_v1_urls_resolve_expected_views(self) -> None:
+    @pytest.mark.parametrize(
+        ('path', 'view_class'),
+        [
+            ('/api/v1/category', CategoryListCreateView),
+            ('/api/v1/category/1', CategoryDetailView),
+            ('/api/v1/quiz', QuizListCreateView),
+            ('/api/v1/quiz/1', QuizDetailView),
+            ('/api/v1/quiz/1/random_question', QuizRandomQuestionView),
+            ('/api/v1/quiz/by_title/Python', QuizByTitleView),
+            ('/api/v1/question', QuestionListCreateView),
+            ('/api/v1/question/1', QuestionDetailView),
+            ('/api/v1/question/by_text/orm', QuestionByTextView),
+            ('/api/v1/question/1/check', QuestionCheckAnswerView),
+        ],
+    )
+    def test_v1_urls_resolve_expected_views(
+        self, path: str, view_class: type[Any]
+    ) -> None:
         """Проверяет соответствие URL и view-классов в v1."""
-        assert (
-            resolve('/api/v1/category').func.view_class
-            is CategoryListCreateView
-        )
-        assert (
-            resolve('/api/v1/category/1').func.view_class
-            is CategoryDetailView
-        )
-
-        assert resolve('/api/v1/quiz').func.view_class is QuizListCreateView
-        assert resolve('/api/v1/quiz/1').func.view_class is QuizDetailView
-        assert (
-            resolve('/api/v1/quiz/1/random_question').func.view_class
-            is QuizRandomQuestionView
-        )
-        assert (
-            resolve('/api/v1/quiz/by_title/Python').func.view_class
-            is QuizByTitleView
-        )
-
-        assert (
-            resolve('/api/v1/question').func.view_class
-            is QuestionListCreateView
-        )
-        assert (
-            resolve('/api/v1/question/1').func.view_class
-            is QuestionDetailView
-        )
-        assert (
-            resolve('/api/v1/question/by_text/orm').func.view_class
-            is QuestionByTextView
-        )
-        assert (
-            resolve('/api/v1/question/1/check').func.view_class
-            is QuestionCheckAnswerView
-        )
+        assert resolve(path).func.view_class is view_class
 
     def test_legacy_unversioned_paths_are_not_available(
         self, client: Client
@@ -102,17 +91,3 @@ class TestApiRoutes:
         assert client.get('/api/category').status_code == HTTPStatus.NOT_FOUND
         assert client.get('/api/quiz').status_code == HTTPStatus.NOT_FOUND
         assert client.get('/api/question').status_code == HTTPStatus.NOT_FOUND
-
-    def test_v2_placeholder_returns_404(self, client: Client) -> None:
-        """Проверяет, что v2 пока заготовка без endpoint-ов."""
-        assert (
-            client.get('/api/v2/category').status_code
-            == HTTPStatus.NOT_FOUND
-        )
-        assert (
-            client.get('/api/v2/quiz').status_code == HTTPStatus.NOT_FOUND
-        )
-        assert (
-            client.get('/api/v2/question').status_code
-            == HTTPStatus.NOT_FOUND
-        )
